@@ -79,3 +79,54 @@ def test_structure_matches():
     # final match should involve A (winner of left) and D (winner of right)
     final = next(m for m in matches if m[0] == 2)
     assert final[1:] == ("A", "D", champ)
+
+
+def test_bracket_widget_and_images(tmp_path):
+    # verify layout coordinates are computed and image loader works
+    from main import BracketWidget, MainWindow
+    from PyQt5 import QtWidgets, QtGui, QtCore
+
+    app = QtWidgets.QApplication([])
+    teams = ["A", "B", "C", "D"]
+    probs = {("A", "B"): 0.6, ("B", "A"): 0.4,
+             ("C", "D"): 0.7, ("D", "C"): 0.3,
+             ("A", "C"): 0.5, ("C", "A"): 0.5,
+             ("B", "D"): 0.5, ("D", "B"): 0.5}
+    sim = BracketSimulator(teams, probs)
+    _, _, struct = sim.most_likely_bracket()
+    widget = BracketWidget()
+    widget.set_structure(teams, struct, {})
+    assert widget.depth == 2
+    # ensure both leaves and root have coords
+    for t in teams:
+        assert t in widget.node_coords
+    # leaves have distinct vertical positions; simple sanity check
+    ys = [widget.node_coords[t][1] for t in teams]
+    assert len(set(ys)) == len(teams)
+
+    # test image loading helper
+    w = MainWindow()
+    w.teams = teams
+    imgfile = tmp_path / "A.png"
+    pix = QtGui.QPixmap(10, 10)
+    pix.fill(QtCore.Qt.red)
+    pix.save(str(imgfile))
+    w._load_images_from_dir(str(tmp_path))
+    assert "A" in w.images
+
+
+def test_structure_matches():
+    # build a small 4-team bracket with predictable probabilities
+    teams = ["A", "B", "C", "D"]
+    probs = {("A", "B"): 1.0, ("B", "A"): 0.0,
+             ("C", "D"): 0.0, ("D", "C"): 1.0,
+             ("A", "D"): 0.5, ("D", "A"): 0.5}
+    sim = BracketSimulator(teams, probs)
+    champ, _, struct = sim.most_likely_bracket()
+    matches = BracketSimulator.structure_matches(struct, len(teams))
+    # first-round matches are A vs B and C vs D
+    first_round = [m for m in matches if m[0] == 1]
+    assert set((m[1], m[2]) for m in first_round) == {("A", "B"), ("C", "D")}
+    # final match should involve A (winner of left) and D (winner of right)
+    final = next(m for m in matches if m[0] == 2)
+    assert final[1:] == ("A", "D", champ)

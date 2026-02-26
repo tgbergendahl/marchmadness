@@ -12,6 +12,12 @@ percent-chance estimates for each possible matchup.
 * Display the marginal probability that each team wins the tournament.
 * Show the predicted winner of every matchup (round-by-round) based on the
   input probabilities.
+* Display a graphical bracket drawing with optional team images loaded from a
+  directory. Images should be named to match the team (e.g. `Duke.png`).  The
+  visualization now mirrors the familiar March Madness layout: first‑round
+  teams are on the left, rounds progress to the right, and round numbers are
+  shown at the top.  Matches are drawn with right‑angle connectors and boxes
+  around team names for clarity.
 
 ## Getting Started
 
@@ -27,6 +33,12 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+> **WSL users:** if you use WSLg the GUI should appear automatically.  On
+> older WSL installations you may need to run an X server (VcXsrv/Xming) and
+> set `DISPLAY`/`WAYLAND_DISPLAY` appropriately.  The code now detects a
+> Wayland display and forces `QT_QPA_PLATFORM=wayland` to avoid the common
+> "could not load xcb" error.
+
 > The GUI is built with PyQt5; you can also install `PyQt6` and adjust the
 > imports if preferred.
 
@@ -36,8 +48,13 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Use the buttons to load your teams file and probability CSV, then click
-"Compute most likely bracket".
+Use the buttons to load your teams file, probability CSV, and (optionally)
+a directory of images. Each image file must be named for a team (e.g.
+`Michigan.png`). After clicking "Compute most likely bracket" you'll get a
+text summary and a separate window showing the full bracket graphic; loaded
+images appear beside their teams.  The GUI features a custom title bar with
+classic red “×” and blue “–” controls in the top‑right corner; you can also
+use your window manager’s normal minimize/close decorations if preferred.
 
 ### CSV format
 
